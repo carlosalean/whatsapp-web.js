@@ -360,6 +360,13 @@ declare namespace WAWebJS {
             qr: string
         ) => void): this
 
+        /** Emitted when the linkingMethod is phone and code is received */
+        on(event: 'code', listener: (
+            /** code string
+             *  @example ```Q1EW-R2ET``` */
+            code: string
+        ) => void): this
+
         /** Emitted when a call is received */
         on(event: 'call', listener: (
             /** The call that started */
@@ -1814,6 +1821,31 @@ declare namespace WAWebJS {
         aggregateEmoji: string,
         hasReactionByMe: boolean,
         senders: Array<Reaction>
+    }
+    interface LinkWithQR {
+        qr: {
+            maxRetries: number;
+        },
+        phone?: never;
+    }
+
+    interface LinkWithPhoneNumber {
+        qr?: never;
+        phone: {
+            number: string;
+        }
+    }
+
+    export class LinkingMethod {
+        qr: {
+            maxRetries: number
+        }
+        phone: {
+            number: string
+        }
+        isQR: () => boolean
+        isPhone: () => boolean
+        constructor({ qr, phone }: LinkWithQR | LinkWithPhoneNumber)
     }
 }
 

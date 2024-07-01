@@ -1,12 +1,42 @@
-const { Client, Location, Poll, List, Buttons, LocalAuth } = require('./index');
+const { Client, Location, Poll, List, Buttons, LocalAuth, LinkingMethod } = require('./index');
+const fs = require('fs');
+
+function findChromeExecutable() {
+    // Lista de posibles ubicaciones donde Chrome podría estar instalado en Windows
+    const chromePaths = [
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+        'C:\\Users\\' + process.env.USERNAME + '\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe'
+    ];
+
+    for (const path of chromePaths) {
+        if (fs.existsSync(path)) {
+            return path;
+        }
+    }
+
+    throw new Error('Google Chrome no está instalado en las ubicaciones estándar, o el sistema no tiene acceso a ellas.');
+}
 
 const client = new Client({
+    options: {
+        linkingMethod: new LinkingMethod({
+            phone: {
+                number: '573113321784@c.us',
+            }
+        })
+    },        
     authStrategy: new LocalAuth(),
     // proxyAuthentication: { username: 'username', password: 'password' },
-    puppeteer: { 
-        // args: ['--proxy-server=proxy-server-that-requires-authentication.example.com'],
-        headless: false
-    }
+    puppeteer: {
+        headless: true,
+        executablePath: findChromeExecutable(),
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+    },
+    webVersionCache: {
+        type: 'remote',
+        remotePath: 'https://raw.githubusercontent.com/carlosalean/Public_wasendbot/main/2.2412.54.html',
+    },
 });
 
 client.initialize();
@@ -18,6 +48,16 @@ client.on('loading_screen', (percent, message) => {
 client.on('qr', (qr) => {
     // NOTE: This event will not be fired if a session is specified.
     console.log('QR RECEIVED', qr);
+});
+
+client.on('code', (code) => {
+    // NOTE: This event will not be fired if a session is specified.
+    console.log('Code RECEIVED', code);
+});
+
+client.on('codeChanged', (code) => {
+    // NOTE: This event will not be fired if a session is specified.
+    console.log('Code RECEIVED', code);
 });
 
 client.on('authenticated', () => {
